@@ -65,21 +65,23 @@ close
 # next steps, can be:
 # check rejection map
 # check r_pp_light_.seq sequence and stack again without bad images!
-#
+
 # crop
-# Background extraction (graxpert 0.8 or rbf 50% substraction)
-# optional: Aberration remover
+# Background extraction (poylnom 2 für IFN, sonst graxpert 0.8 or rbf 50% substraction)
 # plate solve
 # spektrometrische Farbkalibrierung
-# optional: sharpening
+# optional: sharpening (vorsichtig!)
 # denoise (graxpert 0.8)
+# optional: Aberration remover (80%? bei 100 sieht man es beim strechen)
 
-# strech
+# strech, bei vera Lux weniger als vorgeschlagen, 10% Hintergrund, sonst zuviel Rauschen
+#      bei wenig Integrationszeit ist der perfekte strech punkt schwierig
 # (star reduction)
-# lokaler Kontrast (VerLus Revela)
+# lokaler Kontrast (VerLus Revela) (sehr vorsichtig, wichtig ohne deconvolution)
 # curves für farben und Helligkeit
 # arcsin strech für Schwarzpunkt
 
+# ODER Alternativ
 # starnet removal
 # starless deconv
 # starless GHS strech
@@ -87,6 +89,9 @@ close
 # (unpurple filter)
 # histogram strech stars
 # -> strech histogram + arcsin
+
+# ! danach in Affinity nicht zuviel entrauschen und schärfen, sonst matschiges Bild!
+# todo: deconvolution
 
 # notes anlegen
 
