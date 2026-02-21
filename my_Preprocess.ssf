@@ -46,23 +46,25 @@ cd ../process
 calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 3 3 -cfa -equalize_cfa -debayer
 
 # Align lights
-register pp_light -2pass
+register pp_light
 
-# Stack calibrated lights to result.fit
-stack r_pp_light rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -filter-fwhm=2.0k
+# Stack calibrated lights to result.fit, filter frames with sigma 2.0k
+stack r_pp_light rej w 4.5 3.8 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -filter-fwhm=2.0k -rejmap
 
 # Optional: stack only the best frames by registration "quality" (e.g. keep best 80%).
 # stack r_pp_light rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -filter-quality=80% -out=result_q80
 
 # flip if required
 load result
+mirrorx -bottomup
 save ../result_$LIVETIME:%d$s
 
 #cd ..
 close
 
 # next steps, can be:
-# check sequence and stack again without bad images!
+# check rejection map
+# check r_pp_light_.seq sequence and stack again without bad images!
 #
 # crop
 # Background extraction (graxpert 0.8 or rbf 50% substraction)
