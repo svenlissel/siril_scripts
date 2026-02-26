@@ -1,0 +1,111 @@
+############################################
+#
+# Script for Siril 1.4
+# December 2024
+# (C) Sven Lissel
+# Preprocessing v0.1
+#
+########### PREPROCESSING SCRIPT ###########
+#
+# Script for color camera preprocessing
+#
+# Needs 4 sets of RAW images in the working
+# directory, within 4 directories:
+#   biases/
+#   flats/
+#   darks/
+#   lights/
+# Saves masters to ./masters/
+#
+############################################
+
+requires 1.4.0
+
+### ---- MASTER FLAT ---- ###
+# Convert Flat Frames to .fit files
+cd flats
+convert flat -out=../process
+cd ../process
+
+# Calibrate Flat Frames
+calibrate flat -bias=../masters/bias_stacked
+
+# Stack Flat Frames to pp_flat_stacked.fit
+stack pp_flat rej 3 3 -norm=mul -out=../masters/pp_flat_stacked
+cd ..
+
+### ---- LIGHTS ---- ###
+# Convert Light Frames to .fit files
+cd lights
+convert light -out=../process
+cd ../process
+
+# Calibrate Light Frames
+# Cosmetic correction from master dark: -cc=dark [siglo sighi]
+# Use "0 3" to correct hot pixels only (cold pixels disabled)
+calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 3 3 -cfa -equalize_cfa -debayer
+
+# Align lights
+register pp_light
+
+# Stack calibrated lights to result.fit, filter frames with sigma 2.0k
+stack r_pp_light rej w 4.5 3.8 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -filter-fwhm=2.0k -rejmap
+
+# Optional: stack only the best frames by registration "quality" (e.g. keep best 80%).
+# stack r_pp_light rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -filter-quality=80% -out=result_q80
+
+# flip if required
+load result
+mirrorx -bottomup
+save ../result_$LIVETIME:%d$s
+
+#cd ..
+close
+
+# next steps, can be:
+# check rejection map
+# check r_pp_light_.seq sequence and stack again without bad images!
+
+# crop
+# Background extraction (poylnom 2 für IFN, sonst graxpert 0.8 or rbf 50% substraction)
+# plate solve
+# spektrometrische Farbkalibrierung
+# optional: sharpening (vorsichtig!)
+# denoise (graxpert 0.8)
+# optional: Aberration remover (80%? bei 100 sieht man es beim strechen)
+
+# strech, bei vera Lux weniger als vorgeschlagen, 10% Hintergrund, sonst zuviel Rauschen
+#      bei wenig Integrationszeit ist der perfekte strech punkt schwierig
+# (star reduction)
+# lokaler Kontrast (VerLus Revela) (sehr vorsichtig, wichtig ohne deconvolution)
+# curves für farben und Helligkeit
+# arcsin strech für Schwarzpunkt
+
+# ODER Alternativ
+# starnet removal
+# starless deconv
+# starless GHS strech
+# (star processing)
+# (unpurple filter)
+# histogram strech stars
+# -> strech histogram + arcsin
+
+# ! danach in Affinity nicht zuviel entrauschen und schärfen, sonst matschiges Bild!
+# todo: deconvolution
+
+# notes anlegen
+
+# Kometen
+# lights preprocessed in sequence nutzen
+# crop sequence
+# background extraction with polymer 1 auf sequence
+# color calibration auf reference image
+# starnet extraction
+# comet mit mad clipping 1.0 und 1.0 stacken
+# Sterne mit sigma window.
+
+
+# für IFN:
+# RGB trennen
+# grünkanal stärker entrauschen
+# luminanz syntetisch erzeugen
