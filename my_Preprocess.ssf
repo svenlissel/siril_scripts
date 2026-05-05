@@ -28,7 +28,8 @@ convert flat -out=../process
 cd ../process
 
 # Calibrate Flat Frames
-calibrate flat -bias=../masters/bias_stacked
+#calibrate flat -bias=../masters/bias_stacked
+calibrate flat -bias="=100"
 
 # Stack Flat Frames to pp_flat_stacked.fit
 stack pp_flat rej 3 3 -norm=mul -out=../masters/pp_flat_stacked
@@ -43,16 +44,20 @@ cd ../process
 # Calibrate Light Frames
 # Cosmetic correction from master dark: -cc=dark [siglo sighi]
 # Use "0 3" to correct hot pixels only (cold pixels disabled)
-calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 3 3 -cfa -equalize_cfa -debayer
+#calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 0 3 -cfa -equalize_cfa -debayer
+#calibrate light  -flat=../masters/pp_flat_stacked -cfa -equalize_cfa -debayer
+#calibrate light -cfa -equalize_cfa  -debayer
+calibrate light  -bias="=100" -flat=../masters/pp_flat_stacked -cfa -equalize_cfa -debayer
 
 # Align lights
 register pp_light
 
-# Stack calibrated lights to result.fit, filter frames with sigma 2.0k
-stack r_pp_light rej w 4.5 3.8 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -filter-fwhm=2.0k -rejmap
+# FOR IFM: Stack calibrated lights to result.fit, filter frames with sigma 2.0k
+#stack r_pp_light rej w 4.5 3.8 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -filter-fwhm=2.0k -rejmap
+stack r_pp_light rej w 4.5 3.8 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=result -rejmap
 
 # Optional: stack only the best frames by registration "quality" (e.g. keep best 80%).
-# stack r_pp_light rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -filter-quality=80% -out=result_q80
+# stack r_pp_light rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -filter-quality=90% -out=result_q80
 
 # flip if required
 load result
@@ -60,7 +65,14 @@ mirrorx -bottomup
 save ../result_$LIVETIME:%d$s
 
 #cd ..
-close
+
+#neu März 2026
+#aberration mit 0,8
+# bei rauschfreien bildern nur prism mit59% nutzen, sonst Hintergrund zu flach
+# cosmic clarity mit cpuanstatt GPU nutzen
+# veralux strech weniger stark, lieber manuell nach strechen
+
+
 
 # next steps, can be:
 # check rejection map
@@ -109,3 +121,14 @@ close
 # RGB trennen
 # grünkanal stärker entrauschen
 # luminanz syntetisch erzeugen
+
+# Narrowband
+# crop
+# platesolve (flips image)
+# autoBGE
+# cosmic clarity sharpen (both, nonstellar to 1)
+# denoise
+# star removal
+# vera lux alchemie
+# stretch
+# contrast limited histrogram

@@ -28,6 +28,7 @@ convert flat -out=../process
 cd ../process
 
 # Calibrate Flat Frames
+#calibrate flat 
 calibrate flat -bias=../masters/bias_stacked
 
 # Stack Flat Frames to pp_flat_stacked.fit
@@ -43,7 +44,8 @@ cd ../process
 # Calibrate Light Frames
 # Cosmetic correction from master dark: -cc=dark [siglo sighi]
 # Use "0 3" to correct hot pixels only (cold pixels disabled)
-calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 3 3 -cfa -equalize_cfa -debayer
+calibrate light -dark=../masters/dark_stacked -flat=../masters/pp_flat_stacked -cc=dark 3 3 -debayer
+#calibrate light -flat=../masters/pp_flat_stacked -debayer
 
 # Align lights
 register pp_light
@@ -60,7 +62,6 @@ mirrorx -bottomup
 save ../result_$LIVETIME:%d$s
 
 #cd ..
-close
 
 # next steps, can be:
 # check rejection map
